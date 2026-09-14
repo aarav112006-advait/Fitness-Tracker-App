@@ -1,0 +1,146 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- Helper Functions ---
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        (request.auth.token.admin == true || 
+         request.auth.token.role == 'admin');
+    }
+
+    function isValidTimestamp(field) {
+      return field is timestamp;
+    }
+
+    // --- Users Collection ---
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) && 
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'totalPoints', 'level'])) || 
+        isAdmin();
+      allow delete: if isAdmin();
+
+      // User notifications subcollection
+      match /notifications/{notificationId} {
+        allow read: if isOwner(userId);
+        allow write: if isOwner(userId) || isAdmin();
+      }
+    }
+
+    // --- Daily Metrics Collection ---
+    match /daily_metrics/{metricId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.date is string &&
+        request.resource.data.steps is number &&
+        request.resource.data.caloriesBurned is number;
+      allow update: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid &&
+        request.resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // --- Workouts Collection ---
+    match /workouts/{workoutId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || 
+         resource.data.visibility == 'public' || 
+         isAdmin());
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.activityType is string &&
+        request.resource.data.durationMinutes is number;
+      allow update: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid &&
+        request.resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // --- Workout Plans Collection ---
+    match /workout_plans/{planId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.isPublic == true || 
+         resource.data.creatorId == request.auth.uid || 
+         isAdmin());
+      allow create: if isAuthenticated() && 
+        request.resource.data.creatorId == request.auth.uid &&
+        request.resource.data.title is string;
+      allow update: if isAuthenticated() && 
+        (resource.data.creatorId == request.auth.uid || isAdmin());
+      allow delete: if isAuthenticated() && 
+        (resource.data.creatorId == request.auth.uid || isAdmin());
+    }
+
+    // --- Challenges Collection ---
+    match /challenges/{challengeId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && 
+        (request.resource.data.creatorId == request.auth.uid || isAdmin()) &&
+        request.resource.data.title is string &&
+        request.resource.data.targetGoal is number;
+      allow update: if isAuthenticated() && 
+        (resource.data.creatorId == request.auth.uid || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // --- Challenge Participants Collection ---
+    match /challenge_participants/{participantId} {
+      allow read: if isAuthenticated();
+      // Directly creating participant record is restricted to self or callable functions
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.challengeId is string;
+      allow update: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow delete: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // --- Social Posts Collection ---
+    match /social_posts/{postId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && 
+        request.resource.data.authorId == request.auth.uid &&
+        request.resource.data.content is string;
+      // Allow updates if author updates post, OR other users toggling like count
+      allow update: if isAuthenticated() && 
+        (
+          resource.data.authorId == request.auth.uid ||
+          (
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'likesCount'])
+          )
+        );
+      allow delete: if isAuthenticated() && 
+        (resource.data.authorId == request.auth.uid || isAdmin());
+
+      // Comments subcollection
+      match /comments/{commentId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated() && 
+          request.resource.data.authorId == request.auth.uid;
+        allow delete: if isAuthenticated() && 
+          (resource.data.authorId == request.auth.uid || isAdmin());
+      }
+    }
+
+    // --- Leaderboards Collection ---
+    // Read-only for clients. Writes strictly restricted to Cloud Functions / Admin SDK
+    match /leaderboard/{leaderboardId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+  }
+}

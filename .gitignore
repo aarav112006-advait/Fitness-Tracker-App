@@ -1,0 +1,76 @@
+# ==============================
+# Node / React Native
+# ==============================
+node_modules/
+*/node_modules/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ==============================
+# Environment Variables
+# ==============================
+.env
+.env.*
+!.env.example
+
+# ==============================
+# React Native / Metro
+# ==============================
+.metro/
+.expo/
+*.log
+
+# ==============================
+# Android
+# ==============================
+android/.gradle/
+android/app/build/
+android/build/
+android/.cxx/
+android/local.properties
+
+# Android signing
+*.keystore
+*.jks
+
+# ==============================
+# iOS
+# ==============================
+ios/Pods/
+ios/build/
+ios/DerivedData/
+ios/*.xcworkspace/xcuserdata/
+
+# ==============================
+# Firebase
+# ==============================
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Firebase / Google credentials
+google-services.json
+GoogleService-Info.plist
+
+# ==============================
+# IDE
+# ==============================
+.idea/
+.vscode/
+*.swp
+
+# ==============================
+# macOS
+# ==============================
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ==============================
+# Temporary files
+# ==============================
+*.tmp
+*.temp

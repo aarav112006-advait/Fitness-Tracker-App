@@ -1,0 +1,29 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Profile photos
+    match /users/{userId}/avatar/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId)
+                    && request.resource.size < 5 * 1024 * 1024
+                    && request.resource.contentType.matches('image/.*');
+    }
+
+    // Workout progress media and social post attachments
+    match /social_posts/{userId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(userId)
+                    && request.resource.size < 15 * 1024 * 1024
+                    && request.resource.contentType.matches('(image|video)/.*');
+      allow delete: if isOwner(userId);
+    }
+  }
+}
