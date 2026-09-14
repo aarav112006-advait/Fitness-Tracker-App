@@ -1,32 +1,5 @@
 # 🏋️ Fitness Tracker App
 
-```{=html}
-<p align="center">
-```
-`<strong>`{=html}A modern cross-platform fitness companion for tracking
-activity, building healthy habits, completing challenges, and connecting
-with a fitness community.`</strong>`{=html}
-```{=html}
-</p>
-```
-```{=html}
-<p align="center">
-```
-`<img src="https://img.shields.io/badge/React%20Native-Mobile%20App-61DAFB?style=for-the-badge&logo=react&logoColor=black">`{=html}
-`<img src="https://img.shields.io/badge/Firebase-Backend-FFCA28?style=for-the-badge&logo=firebase&logoColor=black">`{=html}
-`<img src="https://img.shields.io/badge/Firestore-Database-FFCA28?style=for-the-badge&logo=firebase&logoColor=black">`{=html}
-`<img src="https://img.shields.io/badge/Cloud%20Functions-Serverless-FF6F00?style=for-the-badge&logo=firebase&logoColor=white">`{=html}
-```{=html}
-</p>
-```
-```{=html}
-<p align="center">
-```
-`<em>`{=html}Track your progress • Stay consistent • Challenge yourself
-• Grow together`</em>`{=html}
-```{=html}
-</p>
-```
 
 ------------------------------------------------------------------------
 
